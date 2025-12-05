@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Desafío Stroop - Grados 9-12 | Akashic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#1e3a5f,#2d5a87);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:15px}
+.header{text-align:center;margin-bottom:15px}
+.title{font-size:1.8em;margin-bottom:5px}
+.grade{background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-size:0.85em;display:inline-block}
+.box{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:20px;width:100%;max-width:400px}
+.info{display:flex;justify-content:space-around;margin-bottom:15px;text-align:center}
+.info-item b{display:block;font-size:1.5em;color:#ffd700}
+.info-item span{font-size:0.75em;opacity:0.8}
+.timer-bar{width:100%;height:10px;background:rgba(255,255,255,0.2);border-radius:5px;margin-bottom:15px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);transition:width 0.1s linear}
+.timer-fill.warning{background:linear-gradient(90deg,#f1c40f,#f39c12)}
+.timer-fill.danger{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+.color-display{text-align:center;padding:50px 20px;background:rgba(0,0,0,0.3);border-radius:16px;margin-bottom:20px}
+.color-word{font-size:3em;font-weight:bold;text-transform:uppercase;letter-spacing:3px}
+.instruction{color:#ffd700;font-size:1em;margin-top:15px}
+.instruction b{display:block;font-size:1.2em;margin-bottom:5px}
+.answer-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answer-btn{padding:18px;font-size:1.1em;font-weight:bold;border:none;border-radius:12px;cursor:pointer;transition:transform 0.1s}
+.answer-btn:active{transform:scale(0.95)}
+.answer-btn.yes{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.answer-btn.no{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
+.btn{width:100%;padding:15px;font-size:1.1em;font-weight:bold;border:none;border-radius:25px;cursor:pointer;margin-top:10px}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-again{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1e3a5f}
+.btn:active{transform:scale(0.98)}
+.result{text-align:center;padding:20px}
+.result h2{color:#ffd700;font-size:1.5em;margin-bottom:10px}
+.result .score{font-size:3em;color:#ffd700;font-weight:bold}
+.result .label{opacity:0.8;margin-bottom:15px}
+.result-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+.result-stat{background:rgba(0,0,0,0.2);padding:12px;border-radius:8px;text-align:center}
+.result-stat b{display:block;color:#ffd700;font-size:1.3em}
+.result-stat span{font-size:0.8em;opacity:0.8}
+.hidden{display:none!important}
+.home-link{position:absolute;top:15px;left:15px;color:#fff;text-decoration:none;font-size:0.9em;opacity:0.8}
+.encouragement{background:rgba(255,215,0,0.2);padding:12px;border-radius:10px;text-align:center;margin-bottom:15px;font-size:0.9em;line-height:1.5}
+.feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:5em;animation:pop 0.4s ease-out;pointer-events:none;z-index:100}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(0);opacity:1}50%{transform:translate(-50%,-50%) scale(1.2)}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.streak{background:rgba(255,215,0,0.3);padding:8px 15px;border-radius:20px;display:inline-block;margin-bottom:10px}
+.streak.hot{animation:pulse 0.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+</style>
+</head>
+<body>
+<a href="digital-literacy-homepage.html" class="home-link">← Volver</a>
+
+<div class="header">
+<div class="title">🎨 Desafío Stroop</div>
+<div class="grade">🎓 Grados 9-12 • Edades 14-18</div>
+</div>
+
+<div class="box">
+<div id="startScreen">
+<div class="encouragement">
+<b>🧠 Entrena Tu Enfoque</b><br>
+Esto prueba tu capacidad para procesar información conflictiva - una habilidad clave para detectar botones falsos, trucos de phishing y contenido engañoso en línea.
+</div>
+<div class="info">
+<div class="info-item"><b>20</b><span>Rondas</span></div>
+<div class="info-item"><b>3s</b><span>Por Ronda</span></div>
+<div class="info-item"><b>🔥</b><span>Rachas</span></div>
+</div>
+<button class="btn btn-start" onclick="startGame()">▶️ ¡Comenzar Desafío!</button>
+</div>
+
+<div id="gameScreen" class="hidden">
+<div class="info">
+<div class="info-item"><b id="roundNum">1</b><span>Ronda</span></div>
+<div class="info-item"><b id="scoreNum">0</b><span>Puntos</span></div>
+<div class="info-item"><b id="streakNum">0</b><span>Racha</span></div>
+</div>
+<div class="streak" id="streakDisplay">🔥 Racha: 0</div>
+<div class="timer-bar"><div class="timer-fill" id="timerBar"></div></div>
+<div class="color-display">
+<div class="color-word" id="colorWord">ROJO</div>
+<div class="instruction">
+<b>¿El COLOR DE LA TINTA coincide con la PALABRA?</b>
+¡No la palabra en sí - el color en que está escrita!
+</div>
+</div>
+<div class="answer-btns">
+<button class="answer-btn yes" onclick="answer(true)">✓ COINCIDE</button>
+<button class="answer-btn no" onclick="answer(false)">✗ NO COINCIDE</button>
+</div>
+</div>
+
+<div id="resultScreen" class="hidden">
+<div class="result">
+<h2 id="resultTitle">¡Desafío Completado!</h2>
+<div class="score" id="finalScore">0</div>
+<div class="label">Puntos</div>
+<div class="result-stats">
+<div class="result-stat"><b id="finalAccuracy">0%</b><span>Precisión</span></div>
+<div class="result-stat"><b id="finalStreak">0</b><span>Mejor Racha</span></div>
+<div class="result-stat"><b id="finalAvgTime">0ms</b><span>Respuesta Prom.</span></div>
+<div class="result-stat"><b id="finalRating">--</b><span>Nivel de Enfoque</span></div>
+</div>
+<button class="btn btn-again" onclick="startGame()">🔄 ¡Intentar de Nuevo!</button>
+</div>
+</div>
+</div>
+
+<div class="feedback hidden" id="feedback"></div>
+
+<script>
+var colors = [
+    {name: 'ROJO', hex: '#e74c3c'},
+    {name: 'AZUL', hex: '#3498db'},
+    {name: 'VERDE', hex: '#2ecc71'},
+    {name: 'AMARILLO', hex: '#f1c40f'},
+    {name: 'NARANJA', hex: '#e67e22'},
+    {name: 'MORADO', hex: '#9b59b6'},
+    {name: 'ROSA', hex: '#e91e63'},
+    {name: 'CELESTE', hex: '#00bcd4'}
+];
+
+var round = 0;
+var score = 0;
+var streak = 0;
+var bestStreak = 0;
+var totalRounds = 20;
+var timePerRound = 3000;
+var timer = null;
+var timerStart = 0;
+var currentMatch = false;
+var correctAnswers = 0;
+var responseTimes = [];
+
+function $(id) { return document.getElementById(id); }
+
+function show(id) {
+    $('startScreen').classList.add('hidden');
+    $('gameScreen').classList.add('hidden');
+    $('resultScreen').classList.add('hidden');
+    $(id).classList.remove('hidden');
+}
+
+function startGame() {
+    round = 0;
+    score = 0;
+    streak = 0;
+    bestStreak = 0;
+    correctAnswers = 0;
+    responseTimes = [];
+    $('scoreNum').textContent = '0';
+    $('streakNum').textContent = '0';
+    show('gameScreen');
+    nextRound();
+}
+
+function nextRound() {
+    round++;
+    if (round > totalRounds) {
+        showResult();
+        return;
+    }
+    
+    $('roundNum').textContent = round;
+    updateStreak();
+    
+    var wordIdx = Math.floor(Math.random() * colors.length);
+    var colorIdx;
+    
+    if (Math.random() < 0.35) {
+        colorIdx = wordIdx;
+        currentMatch = true;
+    } else {
+        do {
+            colorIdx = Math.floor(Math.random() * colors.length);
+        } while (colorIdx === wordIdx);
+        currentMatch = false;
+    }
+    
+    $('colorWord').textContent = colors[wordIdx].name;
+    $('colorWord').style.color = colors[colorIdx].hex;
+    
+    timerStart = Date.now();
+    $('timerBar').style.width = '100%';
+    $('timerBar').className = 'timer-fill';
+    
+    if (timer) clearInterval(timer);
+    timer = setInterval(updateTimer, 50);
+}
+
+function updateTimer() {
+    var elapsed = Date.now() - timerStart;
+    var remaining = Math.max(0, timePerRound - elapsed);
+    var pct = (remaining / timePerRound) * 100;
+    
+    $('timerBar').style.width = pct + '%';
+    
+    if (pct < 25) $('timerBar').className = 'timer-fill danger';
+    else if (pct < 50) $('timerBar').className = 'timer-fill warning';
+    
+    if (remaining <= 0) {
+        clearInterval(timer);
+        streak = 0;
+        showFeedback('⏰', false);
+        setTimeout(nextRound, 600);
+    }
+}
+
+function answer(isYes) {
+    clearInterval(timer);
+    var responseTime = Date.now() - timerStart;
+    responseTimes.push(responseTime);
+    
+    var correct = (isYes === currentMatch);
+    if (correct) {
+        correctAnswers++;
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
+        
+        var speedBonus = Math.max(0, Math.floor((timePerRound - responseTime) / 100));
+        var streakBonus = streak * 2;
+        var points = 10 + speedBonus + streakBonus;
+        
+        score += points;
+        $('scoreNum').textContent = score;
+        showFeedback('✓', true);
+    } else {
+        streak = 0;
+        showFeedback('✗', false);
+    }
+    
+    updateStreak();
+    setTimeout(nextRound, 500);
+}
+
+function updateStreak() {
+    $('streakNum').textContent = streak;
+    var display = $('streakDisplay');
+    display.textContent = '🔥 Racha: ' + streak;
+    
+    if (streak >= 5) {
+        display.classList.add('hot');
+    } else {
+        display.classList.remove('hot');
+    }
+}
+
+function showFeedback(emoji, success) {
+    var fb = $('feedback');
+    fb.textContent = emoji;
+    fb.style.color = success ? '#2ecc71' : '#e74c3c';
+    fb.classList.remove('hidden');
+    fb.style.animation = 'none';
+    fb.offsetHeight;
+    fb.style.animation = 'pop 0.4s ease-out';
+    setTimeout(function() { fb.classList.add('hidden'); }, 400);
+}
+
+function showResult() {
+    show('resultScreen');
+    $('finalScore').textContent = score;
+    
+    var accuracy = Math.round((correctAnswers / totalRounds) * 100);
+    var avgTime = Math.round(responseTimes.reduce(function(a,b) { return a+b; }, 0) / responseTimes.length);
+    
+    $('finalAccuracy').textContent = accuracy + '%';
+    $('finalStreak').textContent = bestStreak;
+    $('finalAvgTime').textContent = avgTime + 'ms';
+    
+    var rating;
+    if (accuracy >= 95 && avgTime < 1000) rating = '🏆 Élite';
+    else if (accuracy >= 85 && avgTime < 1500) rating = '⭐ Excelente';
+    else if (accuracy >= 75) rating = '👍 Bueno';
+    else if (accuracy >= 60) rating = '📈 En Desarrollo';
+    else rating = '💪 Sigue Practicando';
+    
+    $('finalRating').textContent = rating;
+    
+    var title;
+    if (score >= 350) title = '🏆 ¡Enfoque Increíble!';
+    else if (score >= 250) title = '⭐ ¡Mente Aguda!';
+    else if (score >= 150) title = '👍 ¡Buen Trabajo!';
+    else title = '💪 ¡Sigue Entrenando!';
+    
+    $('resultTitle').textContent = title;
+}
+</script>
+</body>
+</html>
