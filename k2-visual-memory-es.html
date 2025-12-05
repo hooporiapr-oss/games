@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Memoria Visual - K-2 | Akashic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#1e3a5f,#2d5a87);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:15px}
+.header{text-align:center;margin-bottom:15px}
+.title{font-size:1.8em;margin-bottom:5px}
+.grade{background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-size:0.85em;display:inline-block}
+.box{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:20px;width:100%;max-width:350px}
+.info{display:flex;justify-content:space-around;margin-bottom:15px;text-align:center}
+.info-item b{display:block;font-size:1.5em;color:#ffd700}
+.info-item span{font-size:0.75em;opacity:0.8}
+.grid-container{background:rgba(0,0,0,0.2);border-radius:12px;padding:15px;margin-bottom:15px}
+.grid{display:grid;gap:8px;max-width:280px;margin:0 auto}
+.cell{aspect-ratio:1;background:rgba(255,255,255,0.15);border:3px solid rgba(255,255,255,0.3);border-radius:12px;cursor:pointer;transition:all 0.2s}
+.cell.lit{background:linear-gradient(135deg,#ffd700,#ff8c00);border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,0.6)}
+.cell.selected{background:linear-gradient(135deg,#3498db,#2980b9);border-color:#3498db}
+.cell.correct{background:linear-gradient(135deg,#2ecc71,#27ae60);border-color:#2ecc71}
+.cell.wrong{background:linear-gradient(135deg,#e74c3c,#c0392b);border-color:#e74c3c}
+.cell:active{transform:scale(0.95)}
+.status{text-align:center;font-size:1.1em;margin-bottom:15px;min-height:30px;color:#ffd700}
+.lives{display:flex;justify-content:center;gap:8px;margin-bottom:15px;font-size:1.5em}
+.life.lost{opacity:0.3}
+.btn{width:100%;padding:15px;font-size:1.1em;font-weight:bold;border:none;border-radius:25px;cursor:pointer;margin-top:10px}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-again{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1e3a5f}
+.btn:active{transform:scale(0.98)}
+.result{text-align:center;padding:20px}
+.result h2{color:#ffd700;font-size:1.5em;margin-bottom:10px}
+.result .score{font-size:3em;color:#ffd700;font-weight:bold}
+.result .label{opacity:0.8;margin-bottom:15px}
+.stars{font-size:2em;margin:15px 0}
+.hidden{display:none!important}
+.home-link{position:absolute;top:15px;left:15px;color:#fff;text-decoration:none;font-size:0.9em;opacity:0.8}
+.encouragement{background:rgba(255,215,0,0.2);padding:10px;border-radius:10px;text-align:center;margin-bottom:15px;font-size:0.95em}
+</style>
+</head>
+<body>
+<a href="digital-literacy-homepage.html" class="home-link">← Volver</a>
+
+<div class="header">
+<div class="title">👁️ Memoria Visual</div>
+<div class="grade">🌟 K-2 • Edades 5-8</div>
+</div>
+
+<div class="box">
+<div id="startScreen">
+<div class="encouragement">🧠 ¡Recuerda qué cuadros se iluminan!</div>
+<div class="info">
+<div class="info-item"><b>3</b><span>Vidas</span></div>
+<div class="info-item"><b>3x3</b><span>Cuadrícula</span></div>
+</div>
+<button class="btn btn-start" onclick="startGame()">▶️ ¡Jugar!</button>
+</div>
+
+<div id="gameScreen" class="hidden">
+<div class="info">
+<div class="info-item"><b id="levelNum">1</b><span>Nivel</span></div>
+<div class="info-item"><b id="tilesNum">3</b><span>Cuadros</span></div>
+</div>
+<div class="lives" id="livesDisplay">❤️❤️❤️</div>
+<div class="status" id="status">¡Mira con atención!</div>
+<div class="grid-container">
+<div class="grid" id="grid"></div>
+</div>
+</div>
+
+<div id="resultScreen" class="hidden">
+<div class="result">
+<h2 id="resultTitle">¡Muy Bien!</h2>
+<div class="score" id="finalLevel">1</div>
+<div class="label">Nivel Alcanzado</div>
+<div class="stars" id="stars">⭐⭐⭐</div>
+<button class="btn btn-again" onclick="startGame()">🔄 ¡Jugar Otra Vez!</button>
+</div>
+</div>
+</div>
+
+<script>
+var level = 1;
+var lives = 3;
+var litTiles = [];
+var selectedTiles = [];
+var canSelect = false;
+var gridSize = 3;
+var tilesToShow = 3;
+
+function $(id) { return document.getElementById(id); }
+
+function show(id) {
+    $('startScreen').classList.add('hidden');
+    $('gameScreen').classList.add('hidden');
+    $('resultScreen').classList.add('hidden');
+    $(id).classList.remove('hidden');
+}
+
+function startGame() {
+    level = 1;
+    lives = 3;
+    updateLives();
+    show('gameScreen');
+    buildLevel();
+}
+
+function getLevelParams(lvl) {
+    if (lvl <= 2) return { grid: 3, tiles: 2 + lvl };
+    if (lvl <= 4) return { grid: 3, tiles: 4 + (lvl - 2) };
+    if (lvl <= 6) return { grid: 4, tiles: 4 + (lvl - 4) };
+    return { grid: 4, tiles: Math.min(8, 6 + (lvl - 6)) };
+}
+
+function buildLevel() {
+    var params = getLevelParams(level);
+    gridSize = params.grid;
+    tilesToShow = params.tiles;
+    
+    $('levelNum').textContent = level;
+    $('tilesNum').textContent = tilesToShow;
+    
+    var grid = $('grid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = 'repeat(' + gridSize + ', 1fr)';
+    
+    var total = gridSize * gridSize;
+    for (var i = 0; i < total; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.idx = i;
+        cell.onclick = function() { selectCell(this); };
+        grid.appendChild(cell);
+    }
+    
+    litTiles = [];
+    var available = [];
+    for (var j = 0; j < total; j++) available.push(j);
+    for (var k = 0; k < tilesToShow; k++) {
+        var r = Math.floor(Math.random() * available.length);
+        litTiles.push(available[r]);
+        available.splice(r, 1);
+    }
+    
+    selectedTiles = [];
+    canSelect = false;
+    showTiles();
+}
+
+function showTiles() {
+    $('status').textContent = '👀 ¡Mira con atención!';
+    var cells = $('grid').children;
+    litTiles.forEach(function(idx) {
+        cells[idx].classList.add('lit');
+    });
+    
+    var showTime = 1500 + (tilesToShow * 300);
+    setTimeout(hideTiles, showTime);
+}
+
+function hideTiles() {
+    var cells = $('grid').children;
+    litTiles.forEach(function(idx) {
+        cells[idx].classList.remove('lit');
+    });
+    $('status').textContent = '👆 ¡Toca los cuadros!';
+    canSelect = true;
+}
+
+function selectCell(cell) {
+    if (!canSelect) return;
+    var idx = parseInt(cell.dataset.idx);
+    if (selectedTiles.indexOf(idx) !== -1) return;
+    
+    selectedTiles.push(idx);
+    
+    if (litTiles.indexOf(idx) !== -1) {
+        cell.classList.add('correct');
+        if (selectedTiles.length === litTiles.length) {
+            canSelect = false;
+            $('status').textContent = '🎉 ¡Muy bien!';
+            setTimeout(nextLevel, 1000);
+        }
+    } else {
+        cell.classList.add('wrong');
+        canSelect = false;
+        lives--;
+        updateLives();
+        
+        if (lives <= 0) {
+            $('status').textContent = '😢 ¡Fin del juego!';
+            setTimeout(showResult, 1500);
+        } else {
+            $('status').textContent = '❌ ¡Ups! ¡Intenta de nuevo!';
+            setTimeout(function() {
+                showCorrectTiles();
+                setTimeout(buildLevel, 1500);
+            }, 500);
+        }
+    }
+}
+
+function showCorrectTiles() {
+    var cells = $('grid').children;
+    litTiles.forEach(function(idx) {
+        cells[idx].classList.add('lit');
+    });
+}
+
+function nextLevel() {
+    level++;
+    buildLevel();
+}
+
+function updateLives() {
+    var html = '';
+    for (var i = 0; i < 3; i++) {
+        html += '<span class="life' + (i >= lives ? ' lost' : '') + '">❤️</span>';
+    }
+    $('livesDisplay').innerHTML = html;
+}
+
+function showResult() {
+    show('resultScreen');
+    $('finalLevel').textContent = level;
+    
+    var title, stars;
+    if (level >= 6) { title = '🏆 ¡Increíble!'; stars = '⭐⭐⭐'; }
+    else if (level >= 4) { title = '🎉 ¡Muy Bien!'; stars = '⭐⭐'; }
+    else if (level >= 2) { title = '👍 ¡Buen Intento!'; stars = '⭐'; }
+    else { title = '💪 ¡Sigue Practicando!'; stars = ''; }
+    
+    $('resultTitle').textContent = title;
+    $('stars').textContent = stars;
+}
+</script>
+</body>
+</html>
