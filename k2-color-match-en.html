@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Color Match - K-2 | Akashic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#1e3a5f,#2d5a87);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:15px}
+.header{text-align:center;margin-bottom:15px}
+.title{font-size:1.8em;margin-bottom:5px}
+.grade{background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-size:0.85em;display:inline-block}
+.box{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:20px;width:100%;max-width:350px}
+.info{display:flex;justify-content:space-around;margin-bottom:15px;text-align:center}
+.info-item b{display:block;font-size:1.5em;color:#ffd700}
+.info-item span{font-size:0.75em;opacity:0.8}
+.timer-bar{width:100%;height:12px;background:rgba(255,255,255,0.2);border-radius:6px;margin-bottom:15px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);transition:width 0.1s linear}
+.timer-fill.warning{background:linear-gradient(90deg,#f1c40f,#f39c12)}
+.timer-fill.danger{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+.color-display{text-align:center;padding:40px 20px;background:rgba(0,0,0,0.3);border-radius:16px;margin-bottom:20px}
+.color-word{font-size:2.5em;font-weight:bold;text-transform:uppercase}
+.instruction{color:#ffd700;font-size:1em;margin-top:15px}
+.answer-btns{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.answer-btn{padding:20px;font-size:1.2em;font-weight:bold;border:none;border-radius:15px;cursor:pointer;transition:transform 0.1s}
+.answer-btn:active{transform:scale(0.95)}
+.answer-btn.yes{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.answer-btn.no{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff}
+.status{text-align:center;font-size:1.1em;margin-bottom:15px;min-height:30px;color:#ffd700}
+.btn{width:100%;padding:15px;font-size:1.1em;font-weight:bold;border:none;border-radius:25px;cursor:pointer;margin-top:10px}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-again{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1e3a5f}
+.btn:active{transform:scale(0.98)}
+.result{text-align:center;padding:20px}
+.result h2{color:#ffd700;font-size:1.5em;margin-bottom:10px}
+.result .score{font-size:3em;color:#ffd700;font-weight:bold}
+.result .label{opacity:0.8;margin-bottom:15px}
+.stars{font-size:2em;margin:15px 0}
+.hidden{display:none!important}
+.home-link{position:absolute;top:15px;left:15px;color:#fff;text-decoration:none;font-size:0.9em;opacity:0.8}
+.encouragement{background:rgba(255,215,0,0.2);padding:10px;border-radius:10px;text-align:center;margin-bottom:15px;font-size:0.95em}
+.feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:4em;animation:pop 0.5s ease-out;pointer-events:none;z-index:100}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(0);opacity:1}50%{transform:translate(-50%,-50%) scale(1.2)}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+</style>
+</head>
+<body>
+<a href="digital-literacy-homepage.html" class="home-link">← Back</a>
+
+<div class="header">
+<div class="title">🎨 Color Match</div>
+<div class="grade">🌟 K-2 • Ages 5-8</div>
+</div>
+
+<div class="box">
+<div id="startScreen">
+<div class="encouragement">🧠 Does the WORD match the COLOR?</div>
+<div class="info">
+<div class="info-item"><b>10</b><span>Rounds</span></div>
+<div class="info-item"><b>5s</b><span>Per Round</span></div>
+</div>
+<button class="btn btn-start" onclick="startGame()">▶️ Play!</button>
+</div>
+
+<div id="gameScreen" class="hidden">
+<div class="info">
+<div class="info-item"><b id="roundNum">1</b><span>Round</span></div>
+<div class="info-item"><b id="scoreNum">0</b><span>Score</span></div>
+</div>
+<div class="timer-bar"><div class="timer-fill" id="timerBar"></div></div>
+<div class="color-display">
+<div class="color-word" id="colorWord">RED</div>
+<div class="instruction">Does the word match the color?</div>
+</div>
+<div class="answer-btns">
+<button class="answer-btn yes" onclick="answer(true)">✓ YES</button>
+<button class="answer-btn no" onclick="answer(false)">✗ NO</button>
+</div>
+</div>
+
+<div id="resultScreen" class="hidden">
+<div class="result">
+<h2 id="resultTitle">Great Job!</h2>
+<div class="score" id="finalScore">0</div>
+<div class="label">Points</div>
+<div class="stars" id="stars">⭐⭐⭐</div>
+<button class="btn btn-again" onclick="startGame()">🔄 Play Again!</button>
+</div>
+</div>
+</div>
+
+<div class="feedback hidden" id="feedback"></div>
+
+<script>
+var colors = [
+    {name: 'RED', hex: '#e74c3c'},
+    {name: 'BLUE', hex: '#3498db'},
+    {name: 'GREEN', hex: '#2ecc71'},
+    {name: 'YELLOW', hex: '#f1c40f'},
+    {name: 'ORANGE', hex: '#e67e22'},
+    {name: 'PURPLE', hex: '#9b59b6'}
+];
+
+var round = 0;
+var score = 0;
+var totalRounds = 10;
+var timePerRound = 5000;
+var timer = null;
+var timerStart = 0;
+var currentMatch = false;
+
+function $(id) { return document.getElementById(id); }
+
+function show(id) {
+    $('startScreen').classList.add('hidden');
+    $('gameScreen').classList.add('hidden');
+    $('resultScreen').classList.add('hidden');
+    $(id).classList.remove('hidden');
+}
+
+function startGame() {
+    round = 0;
+    score = 0;
+    $('scoreNum').textContent = '0';
+    show('gameScreen');
+    nextRound();
+}
+
+function nextRound() {
+    round++;
+    if (round > totalRounds) {
+        showResult();
+        return;
+    }
+    
+    $('roundNum').textContent = round;
+    
+    // Pick word and color
+    var wordIdx = Math.floor(Math.random() * colors.length);
+    var colorIdx;
+    
+    // 50% chance match
+    if (Math.random() < 0.5) {
+        colorIdx = wordIdx;
+        currentMatch = true;
+    } else {
+        do {
+            colorIdx = Math.floor(Math.random() * colors.length);
+        } while (colorIdx === wordIdx);
+        currentMatch = false;
+    }
+    
+    $('colorWord').textContent = colors[wordIdx].name;
+    $('colorWord').style.color = colors[colorIdx].hex;
+    
+    // Start timer
+    timerStart = Date.now();
+    $('timerBar').style.width = '100%';
+    $('timerBar').className = 'timer-fill';
+    
+    if (timer) clearInterval(timer);
+    timer = setInterval(updateTimer, 50);
+}
+
+function updateTimer() {
+    var elapsed = Date.now() - timerStart;
+    var remaining = Math.max(0, timePerRound - elapsed);
+    var pct = (remaining / timePerRound) * 100;
+    
+    $('timerBar').style.width = pct + '%';
+    
+    if (pct < 30) $('timerBar').className = 'timer-fill danger';
+    else if (pct < 60) $('timerBar').className = 'timer-fill warning';
+    
+    if (remaining <= 0) {
+        clearInterval(timer);
+        showFeedback('⏰', false);
+        setTimeout(nextRound, 800);
+    }
+}
+
+function answer(isYes) {
+    clearInterval(timer);
+    
+    var correct = (isYes === currentMatch);
+    if (correct) {
+        score += 10;
+        $('scoreNum').textContent = score;
+        showFeedback('✓', true);
+    } else {
+        showFeedback('✗', false);
+    }
+    
+    setTimeout(nextRound, 600);
+}
+
+function showFeedback(emoji, success) {
+    var fb = $('feedback');
+    fb.textContent = emoji;
+    fb.style.color = success ? '#2ecc71' : '#e74c3c';
+    fb.classList.remove('hidden');
+    fb.style.animation = 'none';
+    fb.offsetHeight;
+    fb.style.animation = 'pop 0.5s ease-out';
+    setTimeout(function() { fb.classList.add('hidden'); }, 500);
+}
+
+function showResult() {
+    show('resultScreen');
+    $('finalScore').textContent = score;
+    
+    var title, stars;
+    if (score >= 80) { title = '🏆 Amazing!'; stars = '⭐⭐⭐'; }
+    else if (score >= 60) { title = '🎉 Great Job!'; stars = '⭐⭐'; }
+    else if (score >= 40) { title = '👍 Good Try!'; stars = '⭐'; }
+    else { title = '💪 Keep Practicing!'; stars = ''; }
+    
+    $('resultTitle').textContent = title;
+    $('stars').textContent = stars;
+}
+</script>
+</body>
+</html>
