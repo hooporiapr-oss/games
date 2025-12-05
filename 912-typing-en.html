@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Speed Typing - Grades 9-12 | Akashic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#1e3a5f,#2d5a87);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:15px}
+.header{text-align:center;margin-bottom:12px}
+.title{font-size:1.6em;margin-bottom:5px}
+.grade{background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-size:0.85em;display:inline-block}
+.box{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:18px;width:100%;max-width:550px}
+.info{display:flex;justify-content:space-around;margin-bottom:12px;text-align:center}
+.info-item b{display:block;font-size:1.4em;color:#ffd700}
+.info-item span{font-size:0.7em;opacity:0.8}
+.timer-bar{width:100%;height:8px;background:rgba(255,255,255,0.2);border-radius:4px;margin-bottom:12px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);transition:width 0.1s linear}
+.timer-fill.warning{background:linear-gradient(90deg,#f1c40f,#f39c12)}
+.timer-fill.danger{background:linear-gradient(90deg,#e74c3c,#c0392b)}
+.passage-box{background:rgba(0,0,0,0.3);border-radius:12px;padding:15px;margin-bottom:12px;line-height:1.9;font-size:1em;min-height:120px}
+.char{display:inline}
+.char.current{background:#ffd700;color:#1e3a5f;padding:1px 2px;border-radius:2px}
+.char.correct{color:#2ecc71}
+.char.incorrect{color:#e74c3c;text-decoration:underline}
+.char.pending{opacity:0.6}
+.input-area{margin-bottom:12px}
+.type-input{width:100%;padding:14px;font-size:1em;border:3px solid rgba(255,255,255,0.3);border-radius:10px;background:rgba(255,255,255,0.1);color:#fff;font-family:monospace}
+.type-input:focus{outline:none;border-color:#ffd700}
+.type-input.error{border-color:#e74c3c;animation:shake 0.3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.live-stats{display:flex;justify-content:space-around;background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;margin-bottom:12px}
+.live-stat{text-align:center}
+.live-stat b{color:#ffd700;font-size:1.1em}
+.live-stat span{font-size:0.7em;opacity:0.8;display:block}
+.btn{width:100%;padding:14px;font-size:1em;font-weight:bold;border:none;border-radius:25px;cursor:pointer;margin-top:8px}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-again{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1e3a5f}
+.btn:active{transform:scale(0.98)}
+.result{text-align:center;padding:15px}
+.result h2{color:#ffd700;font-size:1.4em;margin-bottom:8px}
+.result .score{font-size:3em;color:#ffd700;font-weight:bold}
+.result .label{opacity:0.8;margin-bottom:12px}
+.result-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+.result-stat{background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center}
+.result-stat b{display:block;color:#ffd700;font-size:1.2em}
+.result-stat span{font-size:0.7em;opacity:0.8}
+.hidden{display:none!important}
+.home-link{position:absolute;top:15px;left:15px;color:#fff;text-decoration:none;font-size:0.9em;opacity:0.8}
+.encouragement{background:rgba(255,215,0,0.2);padding:10px;border-radius:10px;text-align:center;margin-bottom:12px;font-size:0.85em;line-height:1.5}
+.mode-select{display:flex;gap:10px;margin-bottom:15px}
+.mode-btn{flex:1;padding:12px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:10px;color:#fff;cursor:pointer;text-align:center;transition:all 0.2s}
+.mode-btn:hover{border-color:#ffd700}
+.mode-btn.selected{border-color:#ffd700;background:rgba(255,215,0,0.2)}
+.mode-btn b{display:block;font-size:1.1em;margin-bottom:3px}
+.mode-btn span{font-size:0.75em;opacity:0.8}
+</style>
+</head>
+<body>
+<a href="digital-literacy-homepage.html" class="home-link">← Back</a>
+
+<div class="header">
+<div class="title">⌨️ Speed Typing</div>
+<div class="grade">🎓 Grades 9-12 • Ages 14-18</div>
+</div>
+
+<div class="box">
+<div id="startScreen">
+<div class="encouragement">🚀 Build professional typing speed! Choose your challenge mode and type cybersecurity content.</div>
+<div class="mode-select">
+<div class="mode-btn selected" onclick="selectMode(60)" id="mode60">
+<b>1 Min</b>
+<span>Quick Test</span>
+</div>
+<div class="mode-btn" onclick="selectMode(120)" id="mode120">
+<b>2 Min</b>
+<span>Standard</span>
+</div>
+<div class="mode-btn" onclick="selectMode(180)" id="mode180">
+<b>3 Min</b>
+<span>Endurance</span>
+</div>
+</div>
+<div class="info">
+<div class="info-item"><b>WPM</b><span>Words/Min</span></div>
+<div class="info-item"><b>%</b><span>Accuracy</span></div>
+<div class="info-item"><b>📈</b><span>Live Stats</span></div>
+</div>
+<button class="btn btn-start" onclick="startGame()">▶️ Start Typing!</button>
+</div>
+
+<div id="gameScreen" class="hidden">
+<div class="info">
+<div class="info-item"><b id="timerDisplay">1:00</b><span>Time Left</span></div>
+<div class="info-item"><b id="wpmDisplay">0</b><span>WPM</span></div>
+<div class="info-item"><b id="accuracyDisplay">100%</b><span>Accuracy</span></div>
+</div>
+<div class="timer-bar"><div class="timer-fill" id="timerBar"></div></div>
+<div class="passage-box" id="passageBox"></div>
+<div class="input-area">
+<input type="text" class="type-input" id="typeInput" placeholder="Start typing here..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+</div>
+<div class="live-stats">
+<div class="live-stat"><b id="charsTyped">0</b><span>Characters</span></div>
+<div class="live-stat"><b id="wordsTyped">0</b><span>Words</span></div>
+<div class="live-stat"><b id="errorsCount">0</b><span>Errors</span></div>
+</div>
+</div>
+
+<div id="resultScreen" class="hidden">
+<div class="result">
+<h2 id="resultTitle">Test Complete!</h2>
+<div class="score" id="finalWpm">0</div>
+<div class="label">Words Per Minute</div>
+<div class="result-stats">
+<div class="result-stat"><b id="finalAccuracy">0%</b><span>Accuracy</span></div>
+<div class="result-stat"><b id="finalChars">0</b><span>Characters</span></div>
+<div class="result-stat"><b id="finalWords">0</b><span>Words</span></div>
+<div class="result-stat"><b id="finalRating">--</b><span>Rating</span></div>
+</div>
+<button class="btn btn-again" onclick="showStart()">🔄 Try Again</button>
+</div>
+</div>
+</div>
+
+<script>
+var passages = [
+    "Cybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information, extorting money from users, or interrupting normal business processes.",
+    "Phishing is a type of social engineering attack often used to steal user data, including login credentials and credit card numbers. It occurs when an attacker, masquerading as a trusted entity, dupes a victim into opening an email, instant message, or text message.",
+    "A firewall is a network security device that monitors incoming and outgoing network traffic and decides whether to allow or block specific traffic based on a defined set of security rules. Firewalls have been a first line of defense in network security for over 25 years.",
+    "Encryption is the process of encoding information so that only authorized parties can access it. It does not prevent interference but denies the intelligible content to would-be interceptors. Modern encryption schemes use public and private keys.",
+    "Ransomware is malicious software that threatens to publish the victim's personal data or perpetually block access to it unless a ransom is paid. While some simple ransomware may lock the system without damaging files, more advanced malware uses cryptographic encryption.",
+    "Two-factor authentication adds an additional layer of security to the authentication process by making it harder for attackers to gain access to a person's devices or online accounts. Even if the password is hacked, a password alone is not enough to pass the check.",
+    "A VPN extends a private network across a public network and enables users to send and receive data across shared or public networks as if their computing devices were directly connected to the private network. VPNs are commonly used to protect sensitive data.",
+    "Social engineering is the psychological manipulation of people into performing actions or divulging confidential information. It differs from traditional hacking in that social engineering attacks can be non-technical and do not necessarily involve software vulnerabilities."
+];
+
+var selectedMode = 60;
+var timeLeft = 60;
+var totalTime = 60;
+var timer = null;
+var currentPassage = '';
+var currentPos = 0;
+var totalChars = 0;
+var correctChars = 0;
+var errors = 0;
+var wordsCompleted = 0;
+var started = false;
+
+function $(id) { return document.getElementById(id); }
+
+function show(id) {
+    $('startScreen').classList.add('hidden');
+    $('gameScreen').classList.add('hidden');
+    $('resultScreen').classList.add('hidden');
+    $(id).classList.remove('hidden');
+}
+
+function showStart() {
+    show('startScreen');
+}
+
+function selectMode(secs) {
+    selectedMode = secs;
+    document.querySelectorAll('.mode-btn').forEach(function(btn) {
+        btn.classList.remove('selected');
+    });
+    $('mode' + secs).classList.add('selected');
+}
+
+function startGame() {
+    timeLeft = selectedMode;
+    totalTime = selectedMode;
+    currentPos = 0;
+    totalChars = 0;
+    correctChars = 0;
+    errors = 0;
+    wordsCompleted = 0;
+    started = false;
+    
+    // Combine random passages to create enough text
+    var shuffled = passages.slice().sort(function() { return 0.5 - Math.random(); });
+    currentPassage = shuffled.join(' ');
+    
+    renderPassage();
+    updateStats();
+    updateTimer();
+    
+    $('typeInput').value = '';
+    $('typeInput').className = 'type-input';
+    $('timerBar').style.width = '100%';
+    $('timerBar').className = 'timer-fill';
+    
+    show('gameScreen');
+    $('typeInput').focus();
+}
+
+function renderPassage() {
+    var html = '';
+    for (var i = 0; i < Math.min(currentPassage.length, currentPos + 300); i++) {
+        var char = currentPassage[i];
+        var cls = 'char';
+        
+        if (i < currentPos) {
+            cls += ' correct';
+        } else if (i === currentPos) {
+            cls += ' current';
+        } else {
+            cls += ' pending';
+        }
+        
+        if (char === ' ') char = ' ';
+        html += '<span class="' + cls + '">' + char + '</span>';
+    }
+    $('passageBox').innerHTML = html;
+}
+
+$('typeInput').addEventListener('input', function(e) {
+    if (!started) {
+        started = true;
+        startTimer();
+    }
+    
+    var typed = e.target.value;
+    var expected = currentPassage[currentPos];
+    
+    if (typed.length > 0) {
+        var lastChar = typed[typed.length - 1];
+        totalChars++;
+        
+        if (lastChar === expected) {
+            correctChars++;
+            currentPos++;
+            e.target.value = '';
+            e.target.className = 'type-input';
+            
+            // Count words (space = word completed)
+            if (expected === ' ') {
+                wordsCompleted++;
+            }
+            
+            renderPassage();
+        } else {
+            errors++;
+            e.target.className = 'type-input error';
+            e.target.value = '';
+        }
+        
+        updateStats();
+    }
+});
+
+function startTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function() {
+        timeLeft--;
+        updateTimer();
+        updateStats();
+        
+        var pct = (timeLeft / totalTime) * 100;
+        $('timerBar').style.width = pct + '%';
+        
+        if (pct < 25) $('timerBar').className = 'timer-fill danger';
+        else if (pct < 50) $('timerBar').className = 'timer-fill warning';
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            showResult();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    var min = Math.floor(timeLeft / 60);
+    var sec = timeLeft % 60;
+    $('timerDisplay').textContent = min + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+function updateStats() {
+    var elapsed = (totalTime - timeLeft) / 60; // minutes
+    var wpm = elapsed > 0 ? Math.round((correctChars / 5) / elapsed) : 0;
+    var accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+    
+    $('wpmDisplay').textContent = wpm;
+    $('accuracyDisplay').textContent = accuracy + '%';
+    $('charsTyped').textContent = correctChars;
+    $('wordsTyped').textContent = wordsCompleted;
+    $('errorsCount').textContent = errors;
+}
+
+function showResult() {
+    show('resultScreen');
+    
+    var elapsed = totalTime / 60;
+    var wpm = Math.round((correctChars / 5) / elapsed);
+    var accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+    
+    $('finalWpm').textContent = wpm;
+    $('finalAccuracy').textContent = accuracy + '%';
+    $('finalChars').textContent = correctChars;
+    $('finalWords').textContent = wordsCompleted;
+    
+    var rating;
+    if (wpm >= 80 && accuracy >= 95) rating = '🏆 Elite';
+    else if (wpm >= 60 && accuracy >= 90) rating = '⭐ Professional';
+    else if (wpm >= 45 && accuracy >= 85) rating = '👍 Competent';
+    else if (wpm >= 30) rating = '📈 Developing';
+    else rating = '💪 Keep Practicing';
+    
+    $('finalRating').textContent = rating;
+    
+    var title;
+    if (wpm >= 80) title = '🏆 Lightning Fast!';
+    else if (wpm >= 60) title = '⭐ Impressive Speed!';
+    else if (wpm >= 45) title = '👍 Good Job!';
+    else title = '💪 Keep Practicing!';
+    
+    $('resultTitle').textContent = title;
+}
+</script>
+</body>
+</html>
