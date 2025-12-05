@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Digital Literacy Assessment - Grades 9-12 | Akashic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,serif;background:linear-gradient(135deg,#1e3a5f,#2d5a87);min-height:100vh;color:#fff;display:flex;flex-direction:column;align-items:center;padding:15px}
+.header{text-align:center;margin-bottom:12px}
+.title{font-size:1.5em;margin-bottom:5px}
+.grade{background:rgba(255,255,255,0.2);padding:5px 15px;border-radius:20px;font-size:0.85em;display:inline-block}
+.box{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:16px;padding:18px;width:100%;max-width:500px}
+.info{display:flex;justify-content:space-around;margin-bottom:15px;text-align:center}
+.info-item b{display:block;font-size:1.3em;color:#ffd700}
+.info-item span{font-size:0.7em;opacity:0.8}
+.progress-bar{width:100%;height:8px;background:rgba(255,255,255,0.2);border-radius:4px;margin-bottom:15px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2ecc71,#27ae60);transition:width 0.3s}
+.question-box{background:rgba(0,0,0,0.3);border-radius:12px;padding:18px;margin-bottom:15px}
+.category-badge{display:inline-block;padding:4px 12px;background:rgba(52,152,219,0.3);border-radius:12px;font-size:0.75em;margin-bottom:10px;color:#3498db}
+.question-text{font-size:1.05em;line-height:1.6;margin-bottom:15px}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:14px 16px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:0.95em;text-align:left}
+.option:hover{border-color:#ffd700;background:rgba(255,215,0,0.1)}
+.option.selected{border-color:#3498db;background:rgba(52,152,219,0.2)}
+.option.correct{border-color:#2ecc71;background:rgba(46,204,113,0.2)}
+.option.wrong{border-color:#e74c3c;background:rgba(231,76,60,0.2)}
+.option:disabled{cursor:default}
+.explanation{background:rgba(52,152,219,0.2);padding:12px;border-radius:8px;margin-top:12px;font-size:0.85em;line-height:1.5;display:none}
+.explanation.show{display:block}
+.btn{width:100%;padding:14px;font-size:1em;font-weight:bold;border:none;border-radius:25px;cursor:pointer;margin-top:10px}
+.btn-start{background:linear-gradient(135deg,#2ecc71,#27ae60);color:#fff}
+.btn-next{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff}
+.btn-again{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#1e3a5f}
+.btn:active{transform:scale(0.98)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.result{text-align:center;padding:15px}
+.result h2{color:#ffd700;font-size:1.4em;margin-bottom:8px}
+.result .score{font-size:3em;color:#ffd700;font-weight:bold}
+.result .label{opacity:0.8;margin-bottom:12px}
+.result-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+.result-stat{background:rgba(0,0,0,0.2);padding:10px;border-radius:8px;text-align:center}
+.result-stat b{display:block;color:#ffd700;font-size:1.1em}
+.result-stat span{font-size:0.7em;opacity:0.8}
+.category-scores{margin-top:15px;text-align:left}
+.category-score{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.category-score:last-child{border-bottom:none}
+.category-name{font-size:0.85em}
+.category-bar{flex:1;margin:0 10px;height:8px;background:rgba(255,255,255,0.2);border-radius:4px;overflow:hidden}
+.category-fill{height:100%;background:#2ecc71;transition:width 0.5s}
+.category-pct{font-size:0.85em;color:#ffd700;min-width:40px;text-align:right}
+.hidden{display:none!important}
+.home-link{position:absolute;top:15px;left:15px;color:#fff;text-decoration:none;font-size:0.9em;opacity:0.8}
+.encouragement{background:rgba(255,215,0,0.2);padding:10px;border-radius:10px;text-align:center;margin-bottom:15px;font-size:0.85em;line-height:1.5}
+</style>
+</head>
+<body>
+<a href="digital-literacy-homepage.html" class="home-link">← Back</a>
+
+<div class="header">
+<div class="title">📝 Digital Literacy Assessment</div>
+<div class="grade">🎓 Grades 9-12 • Ages 14-18</div>
+</div>
+
+<div class="box">
+<div id="startScreen">
+<div class="encouragement">🎯 Test your knowledge across all areas of digital literacy. Get detailed feedback on your strengths!</div>
+<div class="info">
+<div class="info-item"><b>20</b><span>Questions</span></div>
+<div class="info-item"><b>5</b><span>Categories</span></div>
+<div class="info-item"><b>📊</b><span>Detailed Results</span></div>
+</div>
+<p style="font-size:0.8em;opacity:0.8;text-align:center;margin:15px 0">Categories: Security, Privacy, Information Literacy, Digital Communication, Online Safety</p>
+<button class="btn btn-start" onclick="startAssessment()">▶️ Begin Assessment</button>
+</div>
+
+<div id="questionScreen" class="hidden">
+<div class="info">
+<div class="info-item"><b id="questionNum">1</b><span>Question</span></div>
+<div class="info-item"><b id="scoreNum">0</b><span>Correct</span></div>
+<div class="info-item"><b id="totalNum">20</b><span>Total</span></div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
+<div class="question-box">
+<div class="category-badge" id="categoryBadge">🔐 Security</div>
+<div class="question-text" id="questionText">Question goes here?</div>
+<div class="options" id="optionsContainer"></div>
+<div class="explanation" id="explanation"></div>
+</div>
+<button class="btn btn-next hidden" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+</div>
+
+<div id="resultScreen" class="hidden">
+<div class="result">
+<h2 id="resultTitle">Assessment Complete!</h2>
+<div class="score" id="finalScore">0%</div>
+<div class="label">Overall Score</div>
+<div class="result-stats">
+<div class="result-stat"><b id="correctCount">0/20</b><span>Correct</span></div>
+<div class="result-stat"><b id="gradeLevel">--</b><span>Proficiency</span></div>
+</div>
+<div class="category-scores" id="categoryScores"></div>
+<button class="btn btn-again" onclick="startAssessment()">🔄 Retake Assessment</button>
+</div>
+</div>
+</div>
+
+<script>
+var questions = [
+    // Security (4 questions)
+    {
+        category: '🔐 Security',
+        question: 'What is the BEST example of a strong password?',
+        options: ['password123', 'John1990', 'Tr0ub4dor&3', 'qwerty'],
+        correct: 2,
+        explanation: 'Strong passwords use a mix of uppercase, lowercase, numbers, and symbols. "Tr0ub4dor&3" is complex and not based on personal info or common words.'
+    },
+    {
+        category: '🔐 Security',
+        question: 'What does two-factor authentication (2FA) provide?',
+        options: ['Faster login speed', 'An extra layer of security beyond passwords', 'Automatic password changes', 'Free antivirus protection'],
+        correct: 1,
+        explanation: '2FA requires something you know (password) plus something you have (phone/token), making accounts much harder to hack.'
+    },
+    {
+        category: '🔐 Security',
+        question: 'Which action puts your device at MOST risk for malware?',
+        options: ['Updating your operating system', 'Downloading software from unknown sources', 'Using a password manager', 'Enabling automatic updates'],
+        correct: 1,
+        explanation: 'Software from unknown sources may contain hidden malware. Always download from official stores and verified publishers.'
+    },
+    {
+        category: '🔐 Security',
+        question: 'What should you do if you receive an email claiming your bank account will be closed unless you click a link?',
+        options: ['Click the link immediately', 'Reply asking for more information', 'Contact your bank directly using their official website/number', 'Forward it to friends to warn them'],
+        correct: 2,
+        explanation: 'This is likely phishing. Never click suspicious links. Contact your bank directly through verified channels to confirm any account issues.'
+    },
+    // Privacy (4 questions)
+    {
+        category: '🔒 Privacy',
+        question: 'What information should you NEVER share on social media?',
+        options: ['Your favorite music', 'Your home address and daily schedule', 'Photos from public events', 'Your opinion on movies'],
+        correct: 1,
+        explanation: 'Personal details like your address and schedule can be used by criminals for stalking, burglary, or identity theft.'
+    },
+    {
+        category: '🔒 Privacy',
+        question: 'What do browser cookies primarily do?',
+        options: ['Protect against viruses', 'Store information about your browsing activity', 'Speed up your internet connection', 'Block advertisements'],
+        correct: 1,
+        explanation: 'Cookies store data about your visits to websites, including login info, preferences, and tracking data for advertising.'
+    },
+    {
+        category: '🔒 Privacy',
+        question: 'What is the safest approach when an app requests access to your contacts, camera, and location?',
+        options: ['Always grant all permissions', 'Only grant permissions the app actually needs', 'Deny all permissions always', 'It doesn\'t matter'],
+        correct: 1,
+        explanation: 'Grant only necessary permissions. A flashlight app doesn\'t need your contacts. Excessive permissions may indicate data harvesting.'
+    },
+    {
+        category: '🔒 Privacy',
+        question: 'What does a VPN primarily help protect?',
+        options: ['Your computer from viruses', 'Your internet activity from being monitored', 'Your files from being deleted', 'Your battery life'],
+        correct: 1,
+        explanation: 'A VPN encrypts your internet traffic and masks your IP address, protecting your online activity from surveillance.'
+    },
+    // Information Literacy (4 questions)
+    {
+        category: '📚 Information Literacy',
+        question: 'Which is the BEST indicator that a news article is credible?',
+        options: ['It has lots of shares on social media', 'It confirms what you already believe', 'It cites named sources and can be verified elsewhere', 'It uses emotional language'],
+        correct: 2,
+        explanation: 'Credible journalism cites verifiable sources. Cross-reference important claims with other reputable outlets.'
+    },
+    {
+        category: '📚 Information Literacy',
+        question: 'What is a "deepfake"?',
+        options: ['A very secure password', 'AI-generated fake video/audio of real people', 'A type of computer virus', 'An encrypted message'],
+        correct: 1,
+        explanation: 'Deepfakes use AI to create realistic but fake videos/audio, often putting words in people\'s mouths they never said.'
+    },
+    {
+        category: '📚 Information Literacy',
+        question: 'Before sharing news on social media, you should:',
+        options: ['Share immediately if it seems important', 'Check if the source is reputable and verify the claims', 'Only share if friends have shared it', 'Add your own commentary to make it more interesting'],
+        correct: 1,
+        explanation: 'Verify before sharing. Misinformation spreads quickly. Check the source, date, and whether other outlets report the same facts.'
+    },
+    {
+        category: '📚 Information Literacy',
+        question: 'What is "confirmation bias" in the context of online information?',
+        options: ['Confirming your email address', 'Tendency to believe information that supports existing beliefs', 'Verifying sources before sharing', 'A security feature'],
+        correct: 1,
+        explanation: 'Confirmation bias leads us to accept information that confirms what we already believe while dismissing contradicting evidence.'
+    },
+    // Digital Communication (4 questions)
+    {
+        category: '💬 Digital Communication',
+        question: 'What is the most professional way to address someone in a formal email if you don\'t know their name?',
+        options: ['Hey there', 'To Whom It May Concern', 'Yo', 'Sup'],
+        correct: 1,
+        explanation: 'Professional emails use formal greetings. "To Whom It May Concern" or "Dear Hiring Manager" are appropriate when the name is unknown.'
+    },
+    {
+        category: '💬 Digital Communication',
+        question: 'What does "netiquette" refer to?',
+        options: ['Internet speed', 'Proper behavior and manners online', 'Network security', 'Website design'],
+        correct: 1,
+        explanation: 'Netiquette is internet etiquette - the social conventions for polite, respectful online communication.'
+    },
+    {
+        category: '💬 Digital Communication',
+        question: 'Why is it important to pause before posting something when you\'re angry?',
+        options: ['To check your spelling', 'Online posts can be permanent and damage relationships/reputation', 'To add more emojis', 'It\'s not important'],
+        correct: 1,
+        explanation: 'Posts made in anger can be screenshotted, shared, and follow you forever. They can damage relationships, college admissions, and careers.'
+    },
+    {
+        category: '💬 Digital Communication',
+        question: 'What is the best practice for group chats or collaborative online spaces?',
+        options: ['Share everything with everyone', 'Stay on topic and respect others\' time', 'Use lots of caps lock for emphasis', 'Send messages at any hour'],
+        correct: 1,
+        explanation: 'Respect others\' time by staying on topic, being concise, and considering notification settings and time zones.'
+    },
+    // Online Safety (4 questions)
+    {
+        category: '🛡️ Online Safety',
+        question: 'If someone online threatens or harasses you, what should you do FIRST?',
+        options: ['Respond with insults', 'Ignore it and hope it stops', 'Document/screenshot it and tell a trusted adult', 'Delete your account'],
+        correct: 2,
+        explanation: 'Document evidence before blocking. Report to the platform and tell a trusted adult. Serious threats should be reported to authorities.'
+    },
+    {
+        category: '🛡️ Online Safety',
+        question: 'What is "doxxing"?',
+        options: ['A type of video game', 'Publicly revealing someone\'s private information without consent', 'A social media challenge', 'Downloading documents'],
+        correct: 1,
+        explanation: 'Doxxing is publishing private information (address, phone, workplace) to harass someone. It\'s dangerous and often illegal.'
+    },
+    {
+        category: '🛡️ Online Safety',
+        question: 'What\'s the safest approach when meeting someone you only know from online?',
+        options: ['Meet at their house', 'Meet in a public place and tell someone where you\'re going', 'Go alone to keep it private', 'Give them your address first'],
+        correct: 1,
+        explanation: 'Always meet in public, tell someone your plans, and consider bringing a friend. Trust is earned over time, not assumed.'
+    },
+    {
+        category: '🛡️ Online Safety',
+        question: 'What is a "social engineering" attack?',
+        options: ['Building social media followers', 'Manipulating people into revealing confidential information', 'Engineering software', 'Creating social networks'],
+        correct: 1,
+        explanation: 'Social engineering exploits human psychology rather than technical vulnerabilities to trick people into giving up sensitive information.'
+    }
+];
+
+var currentQuestion = 0;
+var score = 0;
+var categoryScores = {
+    '🔐 Security': {correct: 0, total: 0},
+    '🔒 Privacy': {correct: 0, total: 0},
+    '📚 Information Literacy': {correct: 0, total: 0},
+    '💬 Digital Communication': {correct: 0, total: 0},
+    '🛡️ Online Safety': {correct: 0, total: 0}
+};
+var answered = false;
+
+function $(id) { return document.getElementById(id); }
+
+function show(id) {
+    $('startScreen').classList.add('hidden');
+    $('questionScreen').classList.add('hidden');
+    $('resultScreen').classList.add('hidden');
+    $(id).classList.remove('hidden');
+}
+
+function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+}
+
+function startAssessment() {
+    shuffle(questions);
+    currentQuestion = 0;
+    score = 0;
+    answered = false;
+    
+    for (var cat in categoryScores) {
+        categoryScores[cat] = {correct: 0, total: 0};
+    }
+    
+    show('questionScreen');
+    loadQuestion();
+}
+
+function loadQuestion() {
+    var q = questions[currentQuestion];
+    
+    $('questionNum').textContent = currentQuestion + 1;
+    $('scoreNum').textContent = score;
+    $('progressBar').style.width = ((currentQuestion / questions.length) * 100) + '%';
+    $('categoryBadge').textContent = q.category;
+    $('questionText').textContent = q.question;
+    $('explanation').classList.remove('show');
+    $('nextBtn').classList.add('hidden');
+    answered = false;
+    
+    var optionsHtml = '';
+    q.options.forEach(function(opt, i) {
+        optionsHtml += '<button class="option" onclick="selectAnswer(' + i + ')" id="opt' + i + '">' + opt + '</button>';
+    });
+    $('optionsContainer').innerHTML = optionsHtml;
+}
+
+function selectAnswer(idx) {
+    if (answered) return;
+    answered = true;
+    
+    var q = questions[currentQuestion];
+    categoryScores[q.category].total++;
+    
+    for (var i = 0; i < q.options.length; i++) {
+        $('opt' + i).disabled = true;
+        if (i === q.correct) {
+            $('opt' + i).classList.add('correct');
+        } else if (i === idx) {
+            $('opt' + i).classList.add('wrong');
+        }
+    }
+    
+    if (idx === q.correct) {
+        score++;
+        categoryScores[q.category].correct++;
+        $('scoreNum').textContent = score;
+    }
+    
+    $('explanation').textContent = '💡 ' + q.explanation;
+    $('explanation').classList.add('show');
+    $('nextBtn').classList.remove('hidden');
+    
+    if (currentQuestion >= questions.length - 1) {
+        $('nextBtn').textContent = 'See Results →';
+    }
+}
+
+function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion >= questions.length) {
+        showResults();
+    } else {
+        loadQuestion();
+        $('nextBtn').textContent = 'Next Question →';
+    }
+}
+
+function showResults() {
+    show('resultScreen');
+    
+    var pct = Math.round((score / questions.length) * 100);
+    $('finalScore').textContent = pct + '%';
+    $('correctCount').textContent = score + '/' + questions.length;
+    
+    var grade;
+    if (pct >= 90) grade = '🏆 Expert';
+    else if (pct >= 80) grade = '⭐ Proficient';
+    else if (pct >= 70) grade = '👍 Competent';
+    else if (pct >= 60) grade = '📈 Developing';
+    else grade = '💪 Needs Practice';
+    
+    $('gradeLevel').textContent = grade;
+    
+    var title;
+    if (pct >= 90) title = '🏆 Outstanding!';
+    else if (pct >= 80) title = '⭐ Great Job!';
+    else if (pct >= 70) title = '👍 Good Work!';
+    else title = '💪 Keep Learning!';
+    
+    $('resultTitle').textContent = title;
+    
+    // Category breakdown
+    var catHtml = '<h4 style="margin-bottom:10px;color:#ffd700">Category Breakdown</h4>';
+    for (var cat in categoryScores) {
+        var c = categoryScores[cat];
+        var catPct = c.total > 0 ? Math.round((c.correct / c.total) * 100) : 0;
+        catHtml += '<div class="category-score">';
+        catHtml += '<span class="category-name">' + cat + '</span>';
+        catHtml += '<div class="category-bar"><div class="category-fill" style="width:' + catPct + '%"></div></div>';
+        catHtml += '<span class="category-pct">' + catPct + '%</span>';
+        catHtml += '</div>';
+    }
+    $('categoryScores').innerHTML = catHtml;
+}
+</script>
+</body>
+</html>
